@@ -540,5 +540,29 @@ vows
         }
       }
     }
-  })
+  }).addBatch({
+  "CookieJar Prototype Pollution": {
+    "when setting a cookie with the domain __proto__": {
+      topic: function() {
+        const jar = new tough.CookieJar(undefined, {
+          rejectPublicSuffixes: false
+        });
+        // try to pollute the prototype
+        jar.setCookieSync(
+          "Polluter=pollutedValue; Domain=__proto__; Path=/notauth",
+          "https://__proto__/admin"
+        );
+        jar.setCookieSync(
+          "AuthToken=Skipper; Domain=penguin-software.com; Path=/notauth",
+          "https://penguin-software.com/"
+        );
+        this.callback();
+      },
+      "results in a cookie that is not affected by the attempted prototype pollution": function() {
+        const pollutedObject = {};
+        assert(pollutedObject["/notauth"] === undefined);
+      }
+    }
+  }
+})
   .export(module);
